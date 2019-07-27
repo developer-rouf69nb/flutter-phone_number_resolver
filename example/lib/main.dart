@@ -20,13 +20,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String number = await PhoneNumberResolver.resolveLine1();
+  initPlatformState() {
+    PhoneNumberResolver.resolveLine1().then((x){
+      if (!mounted) return;
+      setState(() {
+        _phoneNumber = x;
+      });
+    }).catchError((e)=>
+        print(e)
+    );
 
-    if (!mounted) return;
-    setState(() {
-      _phoneNumber = number;
-    });
+
   }
 
   @override

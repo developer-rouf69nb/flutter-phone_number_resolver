@@ -12,12 +12,9 @@ import android.os.Build
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.telephony.TelephonyManager
-import android.util.Log
 
 
 class PhoneNumberResolverPlugin(var registrar: Registrar) : MethodCallHandler {
-    private var isListenerAdded = false
-
   companion object {
     @JvmStatic
     fun registerWith(registrar: Registrar) {
@@ -26,21 +23,23 @@ class PhoneNumberResolverPlugin(var registrar: Registrar) : MethodCallHandler {
     }
   }
 
+   // private var isListenerAdded = false
+    private  var _result:Result? = null
+    init {
+        registrar.addRequestPermissionsResultListener { _, _, _ ->
+            if (ContextCompat.checkSelfPermission(registrar.activeContext(), Manifest.permission.READ_PHONE_STATE) == PERMISSION_GRANTED) {
+                if(_result != null){ returnResult(_result!!)}
+            }
+            else{
+                _result?.success("--")
+            }
+
+            return@addRequestPermissionsResultListener true
+        }
+    }
+
   override fun onMethodCall(call: MethodCall, result: Result) {
-      if(!isListenerAdded) {
-          registrar.addRequestPermissionsResultListener { _, _, _ ->
-              if (ContextCompat.checkSelfPermission(registrar.activeContext(), Manifest.permission.READ_PHONE_STATE) == PERMISSION_GRANTED) {
-                  returnResult(result)
-                  true
-              }
-              else{
-                  false
-              }
-          }
-      }
-
-
-
+      _result = result
     if (call.method == "getDefaultPhoneNumber") {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(registrar.activeContext(), Manifest.permission.READ_PHONE_STATE) == PERMISSION_GRANTED) {
@@ -58,10 +57,18 @@ class PhoneNumberResolverPlugin(var registrar: Registrar) : MethodCallHandler {
     }
   }
 
+
     private fun returnResult(result: Result) {
-        val telephonyManager = registrar.activeContext().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-        val number = telephonyManager.line1Number
-        result.success(number)
+       try {
+           val telephonyManager = registrar.activeContext().getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+           val number = telephonyManager.line1Number
+           if(number == null)
+               result.success("-")
+           else
+               result.success(number)
+       }catch (e:Exception){
+           print(e)
+       }
     }
 }
 

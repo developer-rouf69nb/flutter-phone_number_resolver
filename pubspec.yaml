@@ -1,8 +1,8 @@
 name: phone_number_resolver
 description: A Flutter plugin for resolving user phone number from Android telephony manager. Currently supports on only Android.
-version: 0.0.1
+version: 0.0.2
 author: Md. Abdur Rouf <developer.rouf69nb@gmail.com>
-homepage: https://github.com/flutter
+homepage: https://github.com/developer-rouf69nb/flutter-phone_number_resolver
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
